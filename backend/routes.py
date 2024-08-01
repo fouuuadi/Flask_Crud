@@ -14,12 +14,17 @@ def create_friend():
     try:
         data = request.json
         
+        required_fields = ["name","role","description","gender"]
+        for field in required_fields:
+            if field not in data:
+                return jsonify({"error":f'Missing required field; {field}'}),400
+        
         name = data.get("name")
         role = data.get("role")
         description = data.get("description")
         gender = data.get("gender")#genre
         
-        # Fetch avatar image basee sur ton genre
+        # fetch avatar image basee sur ton genre
         if gender == "male":
             img_url = f"https://avatar.iran.liara.run/public/boy?username={name}"
         elif gender == "female":
@@ -37,3 +42,55 @@ def create_friend():
     except Exception as e:
         db.session.rollback()
         return jsonify({"error":str(e)}),500
+
+# delete
+@app.route("/api/friends/<int:id>",methods=["DELETE"])
+def delete_friend(id):
+    try:
+        friend = Friend.query.get(id)
+        if friend is None:
+            return jsonify({"error":"Friend not found"}),404
+        
+        db.session.delete(friend)
+        db.session.commit()
+        return jsonify({"msg":"Friend deleted"}),200
+
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({"error": str(e)})
+
+# modification d'un profil Friend
+@app.route("/api/friends/<int:id>", methods=["PATCH"])
+def update_friend(id):
+    try:
+        friend = Friend.query.get(id)
+        if friend is None:
+            return jsonify({"error": "Friend not found"}), 400
+        
+        data = request.json
+        
+        friend.name = data.get("name", friend.name)
+        friend.role = data.get("role", friend.role)
+        friend.description = data.get("description", friend.description)
+        new_gender = data.get("gender", friend.gender)
+        
+        #print(f"Current gender: {friend.gender}, New gender: {new_gender}")
+        
+        if new_gender != friend.gender:
+            friend.gender = new_gender
+            if new_gender == "male":
+                friend.img_url = f"https://avatar.iran.liara.run/public/boy?username={friend.name}"
+            elif new_gender == "female":
+                friend.img_url = f"https://avatar.iran.liara.run/public/girl?username={friend.name}"
+            else:
+                friend.img_url = None
+            
+            #print(f"Updated img_url: {friend.img_url}")
+        
+        db.session.commit()
+        return jsonify(friend.to_json()), 200
+        
+    except Exception as e:
+        db.session.rollback()
+        print(f"Error updating friend: {e}")
+        return jsonify({"error": str(e)}), 500

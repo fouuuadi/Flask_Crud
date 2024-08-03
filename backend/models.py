@@ -9,6 +9,7 @@ class Friend(db.Model):
     description = db.Column(db.Text, nullable=False)
     gender = db.Column(db.String(15), nullable=False)
     img_url = db.Column(db.String(200), nullable=True)
+    social_links = db.Column(db.JSON, nullable=True)
     
     #création d'un dictionnaire a l'aide des instances de Friends
     #pour pouvoir les transforme en json a l'aide jsonify de Flask
@@ -19,6 +20,7 @@ class Friend(db.Model):
             "role":self.role,
             "description":self.description,
             "gender":self.gender,
-            "imgUrl":self.img_url
+            "imgUrl":self.img_url,
+            "socialLinks":self.social_links or {}
         }
     

@@ -23,6 +23,7 @@ def create_friend():
         role = data.get("role")
         description = data.get("description")
         gender = data.get("gender")#genre
+        social_links = data.get("socialLinks", {})
         
         # fetch avatar image basee sur ton genre
         if gender == "male":
@@ -32,7 +33,7 @@ def create_friend():
         else:
             img_url = None
             
-        new_friend = Friend(name=name, role=role, description=description, gender=gender, img_url=img_url)
+        new_friend = Friend(name=name, role=role, description=description, gender=gender, img_url=img_url, social_links=social_links)
             
         db.session.add(new_friend)    
         db.session.commit()
@@ -73,8 +74,12 @@ def update_friend(id):
         friend.role = data.get("role", friend.role)
         friend.description = data.get("description", friend.description)
         new_gender = data.get("gender", friend.gender)
+        social_links = data.get("socialLinks", {})
         
         #print(f"Current gender: {friend.gender}, New gender: {new_gender}")
+        
+        if social_links is not None:
+            friend.social_links = social_links
         
         if new_gender != friend.gender:
             friend.gender = new_gender
@@ -86,6 +91,7 @@ def update_friend(id):
                 friend.img_url = None
             
             #print(f"Updated img_url: {friend.img_url}")
+            #print(f"Updated img_url: {friend.social_links}")
         
         db.session.commit()
         return jsonify(friend.to_json()), 200

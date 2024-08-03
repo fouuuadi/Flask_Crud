@@ -1,0 +1,6 @@
+flask db inti : 
+Pour cree le dossier migration
+flask db migrate -m "Votre modifications sur le Model" : 
+Cette commande génère un nouveau fichier de migration qui inclut les modifications apportées au modèle Friend, notamment l'ajout de la colonne social_links.
+flask db upgrade : 
+Cette commande applique la migration à la base de données, ajoutant ainsi la nouvelle colonne tout en conservant les données existantes.

@@ -1,15 +1,8 @@
-import { useState } from 'react'
 
-function App() {
-  const [count, setCount] = useState(0)
-
+export default function App() {
   return (
-    <>
-      <h1>
-        hello
-      </h1>
-    </>
+    <h1 className="bg bg-red-900">
+      Hello world!
+    </h1>
   )
 }
-
-export default App

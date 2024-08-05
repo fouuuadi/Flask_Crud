@@ -23,4 +23,5 @@ class Friend(db.Model):
             "imgUrl":self.img_url,
             "socialLinks":self.social_links or {}
         }
-    
+
+

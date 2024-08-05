@@ -1,6 +1,6 @@
 from app import app, db  
 from flask import request, jsonify 
-from models import Friend
+from models.friend import Friend
 
 @app.route("/api/friends",methods=["GET"])
 def get_friends():

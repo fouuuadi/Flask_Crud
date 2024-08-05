@@ -12,7 +12,9 @@ app.config ['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 
-import routes
+from models import *
+
+from routes.friend import *
 
 with app.app_context(): 
     db.create_all() #création de la base de donnée

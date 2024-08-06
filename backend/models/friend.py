@@ -2,7 +2,7 @@ from app import db
 
 #création d'un model Friend
 class Friend(db.Model):
-    #définition des colonne de la table
+    #définition des colonnes de la table
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     role = db.Column(db.String(50), nullable=False)

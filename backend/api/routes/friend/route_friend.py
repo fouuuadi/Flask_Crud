@@ -1,6 +1,7 @@
 from extentions import db 
 from flask import request, jsonify, Blueprint 
 from models.friend import Friend
+from api.middlewares.error.middleware_error import ValidationError, NotFoundError
 
 #probléme d'importation circulaire, importer app plusieur fois peut crée des bugs
 #j'utilise donc le blueprint Flask
@@ -10,9 +11,13 @@ route_friend = Blueprint('route_friend', __name__)
 
 @route_friend.route("/api/friends",methods=["GET"])
 def get_friends():
-    friends = Friend.query.all() #récupère tout les champs de la table Friend (Model Friend)
-    result = [friend.to_json() for friend in friends] # récupère le dictionnaire pour le parcourir
-    return jsonify(result), 200 
+    try:
+        friends = Friend.query.all() #récupère tout les champs de la table Friend (Model Friend)
+        result = [friend.to_json() for friend in friends] # récupère le dictionnaire pour le parcourir
+        return jsonify(result), 200 
+    except Exception as e:
+        return handle_generic_error(e) #gestion des erreurs grâce au middleware middleware_error
+
 
 #création d'un friend
 @route_friend.route("/api/friends", methods=["POST"])
@@ -20,10 +25,11 @@ def create_friend():
     try:
         data = request.json
         
-        required_fields = ["name","role","description","gender"]
-        for field in required_fields:
-            if field not in data:
-                return jsonify({"error":f'Missing required field; {field}'}),400
+        required_fields = ["name", "role", "description", "gender","socialLinks"]
+        missing_fields = [field for field in required_fields if field not in data]
+        
+        if missing_fields:
+            raise ValidationError(f'Missing required fields: {", ".join(missing_fields)}', fields=missing_fields)
         
         name = data.get("name")
         role = data.get("role")
@@ -46,9 +52,11 @@ def create_friend():
             
         return jsonify({"msg":"Friend created successfully"}),201
     
+    except ValidationError as e:
+        return handle_validation_error(e)#gestion des erreurs grâce au middleware middleware_error
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error":str(e)}),500
+        return handle_generic_error(e)
 
 # delete
 @route_friend.route("/api/friends/<int:id>",methods=["DELETE"])
@@ -56,15 +64,17 @@ def delete_friend(id):
     try:
         friend = Friend.query.get(id)
         if friend is None:
-            return jsonify({"error":"Friend not found"}),404
+            raise NotFoundError("Friend not found")
         
         db.session.delete(friend)
         db.session.commit()
         return jsonify({"msg":"Friend deleted"}),200
 
+    except NotFoundError as e:
+        return handle_not_found_error(e)#gestion des erreurs grâce au middleware middleware_error
     except Exception as e:
         db.session.rollback()
-        return jsonify({"error": str(e)})
+        return handle_generic_error(e)
 
 # modification d'un profil Friend
 @route_friend.route("/api/friends/<int:id>", methods=["PATCH"])
@@ -72,7 +82,7 @@ def update_friend(id):
     try:
         friend = Friend.query.get(id)
         if friend is None:
-            return jsonify({"error": "Friend not found"}), 400
+            raise NotFoundError("Friend not found")
         
         data = request.json
         
@@ -102,7 +112,8 @@ def update_friend(id):
         db.session.commit()
         return jsonify(friend.to_json()), 200
         
+    except NotFoundError as e:
+        return handle_not_found_error(e)#gestion des erreurs grâce au middleware middleware_error
     except Exception as e:
         db.session.rollback()
-        print(f"Error updating friend: {e}")
-        return jsonify({"error": str(e)}), 500
+        return handle_generic_error(e)

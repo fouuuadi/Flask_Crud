@@ -1,16 +1,21 @@
 from extentions import db 
-from app import app
-from flask import request, jsonify 
+from flask import request, jsonify, Blueprint 
 from models.friend import Friend
 
-@app.route("/api/friends",methods=["GET"])
+#probléme d'importation circulaire, importer app plusieur fois peut crée des bugs
+#j'utilise donc le blueprint Flask
+#je vais créer une variable qui me permet de modifier app depuis mes routes. Ensuite, je dois importer route_friend dans mon fichier app.
+route_friend = Blueprint('route_friend', __name__)
+
+
+@route_friend.route("/api/friends",methods=["GET"])
 def get_friends():
     friends = Friend.query.all() #récupère tout les champs de la table Friend (Model Friend)
     result = [friend.to_json() for friend in friends] # récupère le dictionnaire pour le parcourir
     return jsonify(result), 200 
 
 #création d'un friend
-@app.route("/api/friends", methods=["POST"])
+@route_friend.route("/api/friends", methods=["POST"])
 def create_friend():
     try:
         data = request.json
@@ -46,7 +51,7 @@ def create_friend():
         return jsonify({"error":str(e)}),500
 
 # delete
-@app.route("/api/friends/<int:id>",methods=["DELETE"])
+@route_friend.route("/api/friends/<int:id>",methods=["DELETE"])
 def delete_friend(id):
     try:
         friend = Friend.query.get(id)
@@ -62,7 +67,7 @@ def delete_friend(id):
         return jsonify({"error": str(e)})
 
 # modification d'un profil Friend
-@app.route("/api/friends/<int:id>", methods=["PATCH"])
+@route_friend.route("/api/friends/<int:id>", methods=["PATCH"])
 def update_friend(id):
     try:
         friend = Friend.query.get(id)

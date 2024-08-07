@@ -1,4 +1,4 @@
-from app import db
+from extentions import db
 
 #création d'un model Friend
 class Friend(db.Model):

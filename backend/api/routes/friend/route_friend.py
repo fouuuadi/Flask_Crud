@@ -1,4 +1,5 @@
-from app import app, db  
+from extentions import db 
+from app import app
 from flask import request, jsonify 
 from models.friend import Friend
 
